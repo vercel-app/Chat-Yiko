@@ -2196,7 +2196,7 @@ async function loadContacts() {
         // Obter todos os usuários (em uma aplicação real, você implementaria paginação)
         const usersSnapshot = await db.collection('users')
             .where(firebase.firestore.FieldPath.documentId(), '!=', currentUser.uid)
-            .limit(50)
+            .limit(592920)
             .get();
         
         if (usersSnapshot.empty) {
@@ -2278,7 +2278,7 @@ async function loadExploreUsers() {
         const usersSnapshot = await db.collection('users')
             .where(firebase.firestore.FieldPath.documentId(), '!=', currentUser.uid)
             .orderBy('followers', 'desc')
-            .limit(20)
+            .limit(5000)
             .get();
         
         if (usersSnapshot.empty) {

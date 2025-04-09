@@ -1,0 +1,162 @@
+// Código a ser implementado nas Firebase Cloud Functions
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const axios = require('axios');
+
+admin.initializeApp();
+
+// Função para lidar com solicitações de verificação
+exports.processVerificationRequest = functions.firestore
+    .document('verification_requests/{requestId}')
+    .onCreate(async (snapshot, context) => {
+        const verificationData = snapshot.data();
+        
+        // Dados do usuário que solicitou verificação
+        const userId = verificationData.userId;
+        const userName = verificationData.userName;
+        const userUsername = verificationData.userUsername;
+        const message = verificationData.message;
+        const imageUrl = verificationData.imageUrl;
+        
+        // Número do administrador
+        const adminWhatsApp = '+244947541761';
+        
+        try {
+            // Aqui você usaria uma API de WhatsApp para enviar a mensagem
+            // Este é um exemplo usando um serviço hipotético - você precisará
+            // implementar a integração real com a API do WhatsApp
+            
+            // Exemplo com integração WhatsApp Business API
+            await sendWhatsAppMessage(
+                adminWhatsApp,
+                `Nova solicitação de verificação:\n\nUsuário: ${userName} (@${userUsername})\nID: ${userId}\nMensagem: ${message}\n\nImagem: ${imageUrl}`
+            );
+            
+            // Atualizar status da solicitação
+            await admin.firestore().collection('verification_requests')
+                .doc(context.params.requestId)
+                .update({
+                    notificationSent: true,
+                });
+                
+            return {success: true};
+            
+        } catch (error) {
+            console.error('Erro ao enviar notificação WhatsApp:', error);
+            
+            // Marcar erro na solicitação
+            await admin.firestore().collection('verification_requests')
+                .doc(context.params.requestId)
+                .update({
+                    notificationError: error.message
+                });
+                
+            return {error: error.message};
+        }
+    });
+    
+// Função para lidar com aprovações de verificação
+exports.processVerificationApproval = functions.https.onCall(async (data, context) => {
+    // Verificar se o chamador é o administrador
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Você precisa estar autenticado.');
+    }
+    
+    // Verificar permissões de administrador - implemente sua lógica de autorização aqui
+    const isAdmin = await checkIfUserIsAdmin(context.auth.uid);
+    
+    if (!isAdmin) {
+        throw new functions.https.HttpsError('permission-denied', 'Apenas administradores podem aprovar verificações.');
+    }
+    
+    const {requestId, approved} = data;
+    
+    try {
+        // Obter dados da solicitação
+        const requestDoc = await admin.firestore().collection('verification_requests')
+            .doc(requestId).get();
+            
+        if (!requestDoc.exists) {
+            throw new functions.https.HttpsError('not-found', 'Solicitação não encontrada.');
+        }
+        
+        const requestData = requestDoc.data();
+        const userId = requestData.userId;
+        
+        if (approved) {
+            // Atualizar status de verificação do usuário
+            await admin.firestore().collection('users').doc(userId).update({
+                verified: true,
+                verifiedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Atualizar status da solicitação
+            await admin.firestore().collection('verification_requests')
+                .doc(requestId)
+                .update({
+                    status: 'approved',
+                    processedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    processedBy: context.auth.uid
+                });
+                
+            return {success: true, message: 'Usuário verificado com sucesso.'};
+            
+        } else {
+            // Rejeitar solicitação
+            await admin.firestore().collection('verification_requests')
+                .doc(requestId)
+                .update({
+                    status: 'rejected',
+                    processedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    processedBy: context.auth.uid
+                });
+                
+            return {success: true, message: 'Solicitação rejeitada.'};
+        }
+        
+    } catch (error) {
+        console.error('Erro ao processar aprovação/rejeição:', error);
+        throw new functions.https.HttpsError('internal', 'Erro ao processar a solicitação.');
+    }
+});
+
+// Função auxiliar para enviar mensagem WhatsApp
+async function sendWhatsAppMessage(to, message) {
+    // Esta é uma função fictícia - você precisará implementar 
+    // a integração real com a API do WhatsApp Business
+    // ou usar um serviço como Twilio para enviar mensagens
+    
+    try {
+        // Exemplo usando um serviço hipotético
+        const response = await axios.post('https://api.whatsapp-service.com/send', {
+            phone: to,
+            message: message
+        }, {
+            headers: {
+                'Authorization': 'Bearer YOUR_API_KEY'
+            }
+        });
+        
+        return response.data;
+    } catch (error) {
+        console.error('Erro ao enviar mensagem WhatsApp:', error);
+        throw error;
+    }
+}
+
+// Função auxiliar para verificar se um usuário é administrador
+async function checkIfUserIsAdmin(userId) {
+    try {
+        const userDoc = await admin.firestore().collection('users').doc(userId).get();
+        
+        if (!userDoc.exists) {
+            return false;
+        }
+        
+        const userData = userDoc.data();
+        return userData.isAdmin === true;
+    } catch (error) {
+        console.error('Erro ao verificar status de administrador:', error);
+        return false;
+    }
+}

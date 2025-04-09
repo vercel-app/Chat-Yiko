@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="styles/style.css"/>
+  <title>Login e Cadastros</title>
+</head>
+<body>
+  <h1>
+    
+  </h1>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="https://i.imgur.com/9wQVXRV.png">
+  <link rel="shortcut icon" href="https://imgur.com/9wQVXRV.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yiko|Login_cadastros</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+   <style>
+  :root {
+    /* Paleta de cores escuras com azul */
+    --primary-dark: #121212;
+    --secondary-dark: #1a1a1a;
+    --accent-blue: #0066ff;
+    --accent-blue-dark: #0044cc;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --online-status: #00cc44;
+    --offline-status: #ff3333;
+    --border-color: #2a2a2a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--primary-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Estilos de autenticação */
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--primary-dark), var(--accent-blue-dark));
+}
+
+.auth-container {
+    background-color: var(--secondary-dark);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    width: 400px;
+    animation: fadeIn 0.5s ease;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo-container img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.logo-container h1 {
+    color: var(--accent-blue);
+    font-size: 28px;
+}
+
+.auth-form-container h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.3);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-blue-dark);
+}
+
+.auth-switch {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.auth-switch a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Interface principal do chat */
+.main-container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 320px;
+    background-color: var(--secondary-dark);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.user-profile {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.user-info h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.user-info span {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: auto;
+}
+
+.status-online {
+    background-color: var(--online-status);
+}
+
+.status-offline {
+    background-color: var(--offline-status);
+}
+
+.verified-badge {
+    color: var(--accent-blue);
+    margin-left: 5px;
+    font-size: 14px;
+}
+
+/* Estilos para contatos e conversas */
+.contacts-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.contact-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.contact-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.contact-item.active {
+    background-color: rgba(0, 102, 255, 0.1);
+    border-left: 3px solid var(--accent-blue);
+}
+
+/* Área de chat principal */
+.chat-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 15px 20px;
+    background-color: var(--secondary-dark);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.messages-container {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: var(--primary-dark);
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 70%;
+    padding: 12px 15px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+}
+
+.message-sent {
+    background-color: var(--accent-blue);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received {
+    background-color: var(--secondary-dark);
+    color: var(--text-primary);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.message-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 5px;
+    text-align: right;
+}
+
+.chat-input {
+    padding: 15px;
+    background-color: var(--secondary-dark);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.chat-input input:focus {
+    outline: none;
+}
+
+.send-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.send-button:hover {
+    background-color: var(--accent-blue-dark);
+}
+  </style>
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="logo-container">
+            <img src="https://imgur.com/9wQVXRV.png" alt="GlobalChat Logo">
+            <h1>Yiko Chat</h1>
+        </div>
+        
+        <!-- Tela de Login semelhante ao WhatsApp -->
+        <div id="login-container" class="auth-form-container">
+            <h2>Entrar na sua conta</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <input type="text" id="login-phone" placeholder="Telefone ou e-mail" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Senha" required>
+                </div>
+                <button type="submit" class="btn-primary">Entrar</button>
+                <p class="auth-switch">Não tem uma conta? <a href="#" id="show-register">Cadastre-se</a></p>
+            </form>
+        </div>
+        
+        <!-- Formulário de Cadastro -->
+        <div id="register-container" class="auth-form-container hidden">
+            <h2>Criar nova conta</h2>
+            <form id="register-form">
+                <div class="input-group">
+                    <input type="text" id="register-name" placeholder="Nome completo" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="register-username" placeholder="Nome de usuário" required>
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="register-phone" placeholder="Telefone" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="register-email" placeholder="E-mail" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="register-password" placeholder="Senha" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="register-confirm-password" placeholder="Confirmar senha" required>
+                </div>
+                <button type="submit" class="btn-primary">Cadastrar</button>
+                <p class="auth-switch">Já tem uma conta? <a href="#" id="show-login">Entrar</a></p>
+            </form>
+        </div>
+    </div>
+ 
+
+    <script>
+  // Configuração do Firebase a partir do seu código fornecido
+const firebaseConfig = {
+    apiKey: "AIzaSyBO_lkHCi7QIOcE1vbNEtx3gknsDfZHAps",
+    authDomain: "banco-de-dadossy.firebaseapp.com",
+    projectId: "banco-de-dadossy",
+    storageBucket: "banco-de-dadossy.firebasestorage.app",
+    messagingSenderId: "1972078944",
+    appId: "1:1972078944:web:d5c938bb64f05448f87605",
+    measurementId: "G-R5DQCJ1N66"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Elementos do DOM
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const loginContainer = document.getElementById('login-container');
+const registerContainer = document.getElementById('register-container');
+const showRegister = document.getElementById('show-register');
+const showLogin = document.getElementById('show-login');
+
+// Alternar entre formulários de login e registro
+showRegister.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginContainer.classList.add('hidden');
+    registerContainer.classList.remove('hidden');
+});
+
+showLogin.addEventListener('click', (e) => {
+    e.preventDefault();
+    registerContainer.classList.add('hidden');
+    loginContainer.classList.remove('hidden');
+});
+
+// Validar nome de usuário (sem emojis ou símbolos especiais)
+function validateUsername(username) {
+    // Permite apenas letras, números e underscore
+    const regex = /^[a-zA-Z0-9_]+$/;
+    return regex.test(username);
+}
+
+// Processar registro de usuário
+registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('register-name').value;
+    const username = document.getElementById('register-username').value;
+    const phone = document.getElementById('register-phone').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    // Validações
+    if (!validateUsername(username)) {
+        alert('Nome de usuário deve conter apenas letras, números e underscore (_).');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('As senhas não coincidem.');
+        return;
+    }
+    
+    try {
+        // Criar usuário no Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Criar perfil do usuário no Firestore
+        await db.collection('users').doc(user.uid).set({
+            name: name,
+            username: username,
+            phone: phone,
+            email: email,
+            photoURL: '', // URL padrão para foto de perfil
+            bio: '',
+            verified: false,
+            followers: 0,
+            following: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Redirecionar para a página principal
+        window.location.href = 'app.html';
+        
+    } catch (error) {
+        alert('Erro ao registrar: ' + error.message);
+    }
+});
+
+// Processar login de usuário
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const loginPhone = document.getElementById('login-phone').value;
+    const password = document.getElementById('login-password').value;
+    
+    try {
+        // Verificar se o usuário está usando telefone ou email
+        let email = loginPhone;
+        
+        // Se for um número de telefone, busque o e-mail correspondente
+        if (!loginPhone.includes('@')) {
+            const usersSnapshot = await db.collection('users')
+                .where('phone', '==', loginPhone)
+                .limit(1)
+                .get();
+                
+            if (!usersSnapshot.empty) {
+                email = usersSnapshot.docs[0].data().email;
+            } else {
+                throw new Error('Telefone não encontrado.');
+            }
+        }
+        
+        // Fazer login com email e senha
+        await auth.signInWithEmailAndPassword(email, password);
+        
+        // Atualizar status online
+        const user = auth.currentUser;
+        await db.collection('users').doc(user.uid).update({
+            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+            online: true
+        });
+        
+        // Redirecionar para a página principal
+        window.location.href = 'app.html';
+        
+    } catch (error) {
+        alert('Erro ao entrar: ' + error.message);
+    }
+});
+
+// Verificar se o usuário já está logado
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        window.location.href = 'app.html';
+    }
+});
+  </script>
+</body>
+</html>

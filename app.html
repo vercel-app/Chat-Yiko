@@ -1268,6 +1268,50 @@
                 z-index: 10000;
             }
         }
+      /* Garantir que as mensagens enviadas sejam visíveis imediatamente */
+messagesContainer {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.message.sending {
+    opacity: 0;
+}
+
+.message.sending.show {
+    opacity: 1;
+}
+
+/* Para garantir que o container da mensagem tenha o layout adequado */
+.messagesContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* Ajuste para o container das mensagens */
+.chat-window,{
+    overflow-y: auto;
+    max-height: 400px;
+    padding: 10px;
+}
+
+/* Se for necessário, aplicar a transição para a exibição das novas mensagens */
+.chat-window .message,message container{
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
     </style>
 </head>
 <body>

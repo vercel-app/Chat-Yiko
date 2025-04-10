@@ -3353,8 +3353,23 @@ function toggleFollow(userId, button) {
         .catch(error => {
             console.error('Error toggling follow:', error);
             hideLoading();
+          
             showToast('Erro ao seguir/deixar de seguir', 'error');
+// Exemplo de código para enviar a mensagem e atualizar a interface
+function enviarMensagem() {
+    const textoMensagem = document.getElementById('inputMensagem').value;
+    const userId = firebase.auth().currentUser.uid;
+    
+    // Enviar a mensagem para o Firebase
+    firebase.database().ref('mensagens').push({
+        texto: textoMensagem,
+        usuarioId: userId,
+        timestamp: Date.now()
+    });
 
+    // Atualizar a interface imediatamente
+    displayMessage({ texto: textoMensagem, usuarioId: userId });
+}
 </script>
 </body>
 </html>
